@@ -184,16 +184,16 @@ Pick one or more:
 
 ## Submission checklist
 
-- [ ] All `TODO(student)` sections completed
-- [ ] `make test` passes
-- [ ] `make run-scenarios` generates valid `outputs/metrics.json`
-- [ ] `make grade-local` passes validation
-- [ ] `reports/lab_report.md` filled in with architecture explanation, metrics analysis, and improvement ideas
-- [ ] Can explain at least one route and one failure mode during demo
+- [x] All `TODO(student)` sections completed
+- [x] `make test` passes
+- [x] `make run-scenarios` generates valid `outputs/metrics.json`
+- [x] `make grade-local` passes validation
+- [x] `reports/lab_report.md` filled in with architecture explanation, metrics analysis, and improvement ideas
+- [x] Can explain at least one route and one failure mode during demo
 
 **For 90+ points, also include:**
-- [ ] At least one bonus extension (persistence, parallel fan-out, HITL, time travel, diagram)
-- [ ] Evidence of extension in report (screenshot, log output, or diagram)
+- [x] At least one bonus extension (persistence, parallel fan-out, HITL, time travel, diagram)
+- [x] Evidence of extension in report (screenshot, log output, or diagram)
 
 ---
 

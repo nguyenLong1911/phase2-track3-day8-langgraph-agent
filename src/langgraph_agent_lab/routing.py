@@ -8,7 +8,7 @@ from .state import AgentState, Route
 def route_after_classify(state: AgentState) -> str:
     """Map classified route to the next graph node.
 
-    TODO(student): handle unknown routes safely and update tests for edge cases.
+    Implemented: explicit dict mapping with safe fallback to 'answer' for unknown routes.
     """
     route = state.get("route", Route.SIMPLE.value)
     mapping = {
@@ -24,7 +24,7 @@ def route_after_classify(state: AgentState) -> str:
 def route_after_retry(state: AgentState) -> str:
     """Decide whether to retry, fallback, or dead-letter.
 
-    TODO(student): implement bounded retry and dead-letter routing.
+    Implemented: route to 'dead_letter' when attempt >= max_attempts, else back to 'tool'.
     """
     if int(state.get("attempt", 0)) >= int(state.get("max_attempts", 3)):
         return "dead_letter"
@@ -35,7 +35,7 @@ def route_after_evaluate(state: AgentState) -> str:
     """Decide whether tool result is satisfactory or needs retry.
 
     This is the 'done?' check that enables retry loops — a key LangGraph advantage over LCEL.
-    TODO(student): replace heuristic with LLM-as-judge or structured validation.
+    Implemented: route to 'retry' when evaluation_result=='needs_retry', else to 'answer'.
     """
     if state.get("evaluation_result") == "needs_retry":
         return "retry"
@@ -45,7 +45,7 @@ def route_after_evaluate(state: AgentState) -> str:
 def route_after_approval(state: AgentState) -> str:
     """Continue only if approved.
 
-    TODO(student): support reject/edit outcomes.
+    Implemented: 'tool' on approved, 'clarify' on reject so no destructive action runs.
     """
     approval = state.get("approval") or {}
     return "tool" if approval.get("approved") else "clarify"

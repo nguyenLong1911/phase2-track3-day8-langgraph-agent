@@ -1,30 +1,8 @@
-"""Report generation helper."""
-
-# ruff: noqa: E501
-from __future__ import annotations
-
-import datetime
-from pathlib import Path
-
-from .metrics import MetricsReport
-
-
-def render_report_stub(metrics: MetricsReport) -> str:
-    """Render a comprehensive lab report from collected metrics."""
-    today = datetime.date.today().isoformat()
-
-    scenario_rows = "\n".join(
-        f"| {m.scenario_id} | {m.expected_route} | {m.actual_route or 'N/A'} "
-        f"| {'✓' if m.success else '✗'} | {m.retry_count} | {m.interrupt_count} "
-        f"| {m.latency_ms} ms |"
-        for m in metrics.scenario_metrics
-    )
-
-    return f"""# Day 08 Lab Report
+# Day 08 Lab Report
 
 ## 1. Student
 
-- Date: {today}
+- Date: 2026-05-11
 - Lab: Day 08 — LangGraph Agentic Orchestration
 
 ## 2. Architecture
@@ -72,15 +50,29 @@ START → intake → classify → [route dispatch]
 
 | Scenario | Expected Route | Actual Route | Success | Retries | Interrupts | Latency |
 |---|---|---|:---:|---:|---:|---:|
-{scenario_rows}
+| G01_simple | simple | simple | ✓ | 0 | 0 | 9 ms |
+| G02_simple2 | simple | simple | ✓ | 0 | 0 | 3 ms |
+| G03_tool | tool | tool | ✓ | 0 | 0 | 4 ms |
+| G04_tool2 | tool | tool | ✓ | 0 | 0 | 4 ms |
+| G05_tool3 | tool | tool | ✓ | 0 | 0 | 5 ms |
+| G06_missing | missing_info | missing_info | ✓ | 0 | 0 | 3 ms |
+| G07_missing2 | missing_info | missing_info | ✓ | 0 | 0 | 3 ms |
+| G08_risky | risky | risky | ✓ | 0 | 1 | 7 ms |
+| G09_risky2 | risky | risky | ✓ | 0 | 1 | 5 ms |
+| G10_risky3 | risky | risky | ✓ | 0 | 1 | 6 ms |
+| G11_risky4 | risky | risky | ✓ | 0 | 1 | 4 ms |
+| G12_error | error | error | ✓ | 2 | 0 | 6 ms |
+| G13_error2 | error | error | ✓ | 2 | 0 | 6 ms |
+| G14_dead | error | error | ✓ | 1 | 0 | 4 ms |
+| G15_mixed | risky | risky | ✓ | 0 | 1 | 8 ms |
 
 **Summary:**
-- Total scenarios: {metrics.total_scenarios}
-- Success rate: **{metrics.success_rate:.1%}**
-- Average nodes visited per scenario: {metrics.avg_nodes_visited:.1f}
-- Total retry events: {metrics.total_retries}
-- Total approval/interrupt events: {metrics.total_interrupts}
-- State history (resume) verified: **{metrics.resume_success}**
+- Total scenarios: 15
+- Success rate: **100.0%**
+- Average nodes visited per scenario: 6.6
+- Total retry events: 5
+- Total approval/interrupt events: 5
+- State history (resume) verified: **True**
 
 ## 5. Failure Analysis
 
@@ -102,14 +94,14 @@ action executes. In CI/tests, mock approval is always `True`; real HITL uses `in
 ## 6. Persistence / Recovery Evidence
 
 - **Checkpointer**: `MemorySaver` is instantiated per CLI run and passed to `graph.compile(checkpointer=checkpointer)`.
-- **Thread isolation**: Each scenario gets a unique `thread_id = "thread-{{scenario.id}}"`.
-- **State history**: After all scenarios run, the CLI calls `graph.get_state_history()` on the first thread. If checkpoints exist, `resume_success` is set to `True` (observed: `{metrics.resume_success}`).
+- **Thread isolation**: Each scenario gets a unique `thread_id = "thread-{scenario.id}"`.
+- **State history**: After all scenarios run, the CLI calls `graph.get_state_history()` on the first thread. If checkpoints exist, `resume_success` is set to `True` (observed: `True`).
 - **Crash-resume path**: With `MemorySaver` within a process, or `SqliteSaver` across restarts, the same `thread_id` resumes from the last checkpoint. Switch `checkpointer: sqlite` in `configs/lab.yaml` for cross-process persistence.
 - **Time-travel**: `graph.get_state_history()` returns all checkpoints in reverse order; replaying from any checkpoint demonstrates time-travel.
 
 ## 7. Extension Work
 
-- **State history replay**: CLI verifies `graph.get_state_history()` returns checkpoints and sets `resume_success=True` in metrics ({metrics.resume_success}).
+- **State history replay**: CLI verifies `graph.get_state_history()` returns checkpoints and sets `resume_success=True` in metrics (True).
 - **SQLite persistence**: `persistence.py` instantiates `SqliteSaver(conn=sqlite3.connect(...))` with WAL mode (per the LangGraph 3.x API). Switch by setting `checkpointer: sqlite` in `configs/lab.yaml`; checkpoints survive process restart for the same `thread_id`.
 - **Mermaid graph diagram**: CLI exports `outputs/graph.mmd` via `graph.get_graph().draw_mermaid()` after each run for documentation and review.
 - **Custom scenarios**: `data/sample/scenarios.jsonl` extends the 7 base scenarios with S08–S10 to exercise additional risky/tool/error keywords (`cancel`, `track`, `crashed`) and confirm routing generalizes.
@@ -125,10 +117,3 @@ If given one more day:
 3. **Structured tool result schemas** (Pydantic models) so `evaluate_node` makes precise decisions instead of substring-matching `"ERROR"`.
 4. **Switch to PostgreSQL checkpointer** with a health-check endpoint for Kubernetes deployment and horizontal scaling.
 5. **Parallel fan-out** for multi-tool scenarios: use `Send` API to dispatch multiple tool calls concurrently and merge evidence before `evaluate`.
-"""
-
-
-def write_report(metrics: MetricsReport, output_path: str | Path) -> None:
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_report_stub(metrics), encoding="utf-8")

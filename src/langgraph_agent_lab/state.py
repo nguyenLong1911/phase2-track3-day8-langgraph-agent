@@ -41,8 +41,10 @@ class ApprovalDecision(BaseModel):
 class AgentState(TypedDict, total=False):
     """LangGraph state.
 
-    TODO(student): decide which fields should be append-only and which should be overwritten.
-    The current annotations give a safe starting point for auditability.
+    Reducer policy:
+    - Append-only via operator.add: messages, tool_results, errors, events (audit log).
+    - Overwrite (default): route, attempt, evaluation_result, approval, final_answer,
+      pending_question, proposed_action, risk_level (only the latest value matters).
     """
 
     thread_id: str

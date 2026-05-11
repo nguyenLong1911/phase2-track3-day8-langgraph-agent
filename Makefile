@@ -1,4 +1,4 @@
-.PHONY: install test lint typecheck run-scenarios grade-local clean
+.PHONY: install test lint typecheck run-scenarios grade-local clean ui demo-persistence demo-time-travel
 
 install:
 	pip install -e '.[dev]'
@@ -17,6 +17,15 @@ run-scenarios:
 
 grade-local:
 	python -m langgraph_agent_lab.cli validate-metrics --metrics outputs/metrics.json
+
+ui:
+	streamlit run src/langgraph_agent_lab/ui.py
+
+demo-persistence:
+	python -m langgraph_agent_lab.cli demo-persistence
+
+demo-time-travel:
+	python -m langgraph_agent_lab.cli demo-time-travel --pick 3
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .mypy_cache htmlcov dist build *.egg-info outputs/*.json
